@@ -17,6 +17,7 @@ import (
 	"github.com/juju/juju/agent"
 	agenttools "github.com/juju/juju/agent/tools"
 	"github.com/juju/juju/api/upgrader"
+	"github.com/juju/juju/juju/arch"
 	"github.com/juju/juju/state/watcher"
 	coretools "github.com/juju/juju/tools"
 	"github.com/juju/juju/version"
@@ -121,7 +122,14 @@ func closeChannel(ch chan struct{}) {
 func (u *Upgrader) loop() error {
 	// Start by reporting current tools (which includes arch/series, and is
 	// used by the state server in communicating the desired version below).
-	if err := u.st.SetVersion(u.tag.String(), version.Current); err != nil {
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+
+	if err := u.st.SetVersion(u.tag.String(), current); err != nil {
 		return errors.Annotate(err, "cannot set agent version")
 	}
 	versionWatcher, err := u.st.WatchAPIVersion(u.tag.String())
@@ -201,8 +209,12 @@ func (u *Upgrader) loop() error {
 }
 
 func toBinaryVersion(vers version.Number) version.Binary {
-	outVers := version.Current
-	outVers.Number = vers
+	outVers := version.Binary{
+		Number: vers,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	return outVers
 }
 
@@ -212,8 +224,15 @@ func (u *Upgrader) toolsAlreadyDownloaded(wantVersion version.Binary) bool {
 }
 
 func (u *Upgrader) newUpgradeReadyError(newVersion version.Binary) *UpgradeReadyError {
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+
 	return &UpgradeReadyError{
-		OldTools:  version.Current,
+		OldTools:  current,
 		NewTools:  newVersion,
 		AgentName: u.tag.String(),
 		DataDir:   u.dataDir,

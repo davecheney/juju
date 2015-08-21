@@ -18,6 +18,7 @@ import (
 	"github.com/juju/juju/environs/filestorage"
 	"github.com/juju/juju/environs/storage"
 	envtools "github.com/juju/juju/environs/tools"
+	"github.com/juju/juju/juju/arch"
 	"github.com/juju/juju/juju/names"
 	"github.com/juju/juju/state"
 	coretesting "github.com/juju/juju/testing"
@@ -63,12 +64,16 @@ func (s *ToolsFixture) UploadFakeToolsToDirectory(c *gc.C, dir, toolsDir, stream
 func (s *ToolsFixture) UploadFakeTools(c *gc.C, stor storage.Storage, toolsDir, stream string) {
 	arches := s.UploadArches
 	if len(arches) == 0 {
-		arches = []string{version.Current.Arch}
+		arches = []string{arch.HostArch()}
 	}
 	var versions []version.Binary
 	for _, arch := range arches {
-		v := version.Current
-		v.Arch = arch
+		v := version.Binary{
+			Number: version.Current.Number,
+			Series: version.Current.Series,
+			Arch:   arch,
+			OS:     version.Current.OS,
+		}
 		for _, series := range toolsLtsSeries {
 			v.Series = series
 			versions = append(versions, v)
@@ -219,8 +224,12 @@ func uploadFakeTools(stor storage.Storage, toolsDir, stream string) error {
 	toolsSeries.Add(version.Current.Series)
 	var versions []version.Binary
 	for _, series := range toolsSeries.Values() {
-		vers := version.Current
-		vers.Series = series
+		vers := version.Binary{
+			Number: version.Current.Number,
+			Series: series,
+			Arch:   arch.HostArch(),
+			OS:     version.Current.OS,
+		}
 		versions = append(versions, vers)
 	}
 	if _, err := UploadFakeToolsVersions(stor, toolsDir, stream, versions...); err != nil {
@@ -248,7 +257,13 @@ func MustUploadFakeTools(stor storage.Storage, toolsDir, stream string) {
 // RemoveFakeTools deletes the fake tools from the supplied storage.
 func RemoveFakeTools(c *gc.C, stor storage.Storage, toolsDir string) {
 	c.Logf("removing fake tools")
-	toolsVersion := version.Current
+	toolsVersion := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+
 	name := envtools.StorageName(toolsVersion, toolsDir)
 	err := stor.Remove(name)
 	c.Check(err, jc.ErrorIsNil)

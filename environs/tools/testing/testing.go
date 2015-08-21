@@ -26,6 +26,7 @@ import (
 	"github.com/juju/juju/environs/storage"
 	"github.com/juju/juju/environs/sync"
 	"github.com/juju/juju/environs/tools"
+	"github.com/juju/juju/juju/arch"
 	"github.com/juju/juju/juju/names"
 	coretesting "github.com/juju/juju/testing"
 	coretools "github.com/juju/juju/tools"
@@ -33,13 +34,18 @@ import (
 )
 
 func GetMockBundleTools(c *gc.C) tools.BundleToolsFunc {
-	return func(w io.Writer, forceVersion *version.Number) (vers version.Binary, sha256Hash string, err error) {
-		vers = version.Current
+	return func(w io.Writer, forceVersion *version.Number) (version.Binary, string, error) {
+		vers := version.Binary{
+			Number: version.Current.Number,
+			Series: version.Current.Series,
+			Arch:   arch.HostArch(),
+			OS:     version.Current.OS,
+		}
 		if forceVersion != nil {
 			vers.Number = *forceVersion
 		}
-		sha256Hash = fmt.Sprintf("%x", sha256.New().Sum(nil))
-		return vers, sha256Hash, err
+		sha256Hash := fmt.Sprintf("%x", sha256.New().Sum(nil))
+		return vers, sha256Hash, nil
 	}
 }
 
@@ -47,7 +53,12 @@ func GetMockBundleTools(c *gc.C) tools.BundleToolsFunc {
 // a fake tools tarball.
 func GetMockBuildTools(c *gc.C) sync.BuildToolsTarballFunc {
 	return func(forceVersion *version.Number, stream string) (*sync.BuiltTools, error) {
-		vers := version.Current
+		vers := version.Binary{
+			Number: version.Current.Number,
+			Series: version.Current.Series,
+			Arch:   arch.HostArch(),
+			OS:     version.Current.OS,
+		}
 		if forceVersion != nil {
 			vers.Number = *forceVersion
 		}

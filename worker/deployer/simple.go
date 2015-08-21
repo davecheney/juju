@@ -16,6 +16,7 @@ import (
 	"github.com/juju/juju/agent"
 	"github.com/juju/juju/agent/tools"
 	"github.com/juju/juju/apiserver/params"
+	"github.com/juju/juju/juju/arch"
 	"github.com/juju/juju/service"
 	"github.com/juju/juju/service/common"
 	"github.com/juju/juju/version"
@@ -108,9 +109,16 @@ func (ctx *SimpleContext) DeployUnit(unitName, initialPassword string) (err erro
 	tag := names.NewUnitTag(unitName)
 	dataDir := ctx.agentConfig.DataDir()
 	logDir := ctx.agentConfig.LogDir()
-	// TODO(dfc)
-	_, err = tools.ChangeAgentTools(dataDir, tag.String(), version.Current)
-	// TODO(dfc)
+	// TODO(dfc) should not stringify tag here
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+
+	_, err = tools.ChangeAgentTools(dataDir, tag.String(), current)
+	// TODO(dfc) should not stringify tag here
 	toolsDir := tools.ToolsDir(dataDir, tag.String())
 	defer removeOnErr(&err, toolsDir)
 

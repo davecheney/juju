@@ -97,7 +97,7 @@ func (s *BaseSuite) PatchAttempts(retries int) {
 
 func (s *BaseSuite) PatchVersion(vers version.Binary) {
 	s.Patched.Version = vers
-	s.PatchValue(&getVersion, s.Patched.GetVersion)
+	s.PatchValue(&currentSeries, vers.Series)
 }
 
 func NewDiscoveryCheck(name string, running bool, failure error) discoveryCheck {

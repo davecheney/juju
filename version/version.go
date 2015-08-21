@@ -17,8 +17,6 @@ import (
 	"strings"
 
 	"gopkg.in/mgo.v2/bson"
-
-	"github.com/juju/juju/juju/arch"
 )
 
 // The presence and format of this constant is very important.
@@ -42,12 +40,10 @@ var osVers = mustOSVersion()
 var Current = struct {
 	Number
 	Series string
-	Arch   string
 	OS     OSType
 }{
 	Number: MustParse(version),
 	Series: osVers,
-	Arch:   arch.HostArch(),
 	OS:     MustOSFromSeries(osVers),
 }
 

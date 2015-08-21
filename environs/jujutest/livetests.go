@@ -29,6 +29,7 @@ import (
 	envtoolstesting "github.com/juju/juju/environs/tools/testing"
 	"github.com/juju/juju/instance"
 	"github.com/juju/juju/juju"
+	"github.com/juju/juju/juju/arch"
 	jujutesting "github.com/juju/juju/juju/testing"
 	"github.com/juju/juju/network"
 	"github.com/juju/juju/provider/dummy"
@@ -452,9 +453,12 @@ func (t *LiveTests) TestBootstrapAndDeploy(c *gc.C) {
 	defer mw0.Stop()
 
 	// If the series has not been specified, we expect the most recent Ubuntu LTS release to be used.
-	expectedVersion := version.Current
-	expectedVersion.Series = config.LatestLtsSeries()
-
+	expectedVersion := version.Binary{
+		Number: version.Current.Number,
+		Series: config.LatestLtsSeries(),
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	mtools0 := waitAgentTools(c, mw0, expectedVersion)
 
 	// Create a new service and deploy a unit of it.
@@ -750,7 +754,12 @@ func (t *LiveTests) TestBootstrapWithDefaultSeries(c *gc.C) {
 		c.Skip("HasProvisioner is false; cannot test deployment")
 	}
 
-	current := version.Current
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	other := current
 	other.Series = "quantal"
 	if current == other {

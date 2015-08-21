@@ -29,6 +29,7 @@ import (
 	"github.com/juju/juju/environs"
 	"github.com/juju/juju/environs/config"
 	"github.com/juju/juju/instance"
+	"github.com/juju/juju/juju/arch"
 	"github.com/juju/juju/mongo"
 	"github.com/juju/juju/network"
 	"github.com/juju/juju/state"
@@ -308,13 +309,19 @@ func (c *BootstrapCommand) populateDefaultStoragePools(st *state.State) error {
 func (c *BootstrapCommand) populateTools(st *state.State, env environs.Environ) error {
 	agentConfig := c.CurrentConfig()
 	dataDir := agentConfig.DataDir()
-	tools, err := agenttools.ReadTools(dataDir, version.Current)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	tools, err := agenttools.ReadTools(dataDir, current)
 	if err != nil {
 		return err
 	}
 
 	data, err := ioutil.ReadFile(filepath.Join(
-		agenttools.SharedToolsDir(dataDir, version.Current),
+		agenttools.SharedToolsDir(dataDir, current),
 		"tools.tar.gz",
 	))
 	if err != nil {

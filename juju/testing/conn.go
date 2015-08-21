@@ -33,6 +33,7 @@ import (
 	envtesting "github.com/juju/juju/environs/testing"
 	"github.com/juju/juju/environs/tools"
 	"github.com/juju/juju/juju"
+	"github.com/juju/juju/juju/arch"
 	"github.com/juju/juju/juju/osenv"
 	"github.com/juju/juju/mongo"
 	"github.com/juju/juju/provider/dummy"
@@ -240,7 +241,13 @@ func (s *JujuConnSuite) setUpConn(c *gc.C) {
 	s.PatchValue(&dummy.LogDir, s.LogDir)
 
 	versions := PreferredDefaultVersions(environ.Config(), version.Binary{Number: version.Current.Number, Series: "precise", Arch: "amd64"})
-	versions = append(versions, version.Current)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	versions = append(versions, current)
 
 	// Upload tools for both preferred and fake default series
 	s.DefaultToolsStorageDir = c.MkDir()
@@ -316,10 +323,20 @@ func (s *JujuConnSuite) AddToolsToState(c *gc.C, versions ...version.Binary) {
 // The preferred series is default-series if specified,
 // otherwise the latest LTS.
 func (s *JujuConnSuite) AddDefaultToolsToState(c *gc.C) {
-	preferredVersion := version.Current
-	preferredVersion.Arch = "amd64"
+	preferredVersion := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   "amd64",
+		OS:     version.Current.OS,
+	}
 	versions := PreferredDefaultVersions(s.Environ.Config(), preferredVersion)
-	versions = append(versions, version.Current)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	versions = append(versions, current)
 	s.AddToolsToState(c, versions...)
 }
 
