@@ -38,7 +38,13 @@ var osVers = mustOSVersion()
 // Current gives the current version of the system.  If the file
 // "FORCE-VERSION" is present in the same directory as the running
 // binary, it will override this.
-var Current = Binary{
+
+var Current = struct {
+	Number
+	Series string
+	Arch   string
+	OS     OSType
+}{
 	Number: MustParse(version),
 	Series: osVers,
 	Arch:   arch.HostArch(),
