@@ -20,6 +20,7 @@ import (
 	"github.com/juju/juju/cmd/envcmd"
 	"github.com/juju/juju/environs/sync"
 	envtools "github.com/juju/juju/environs/tools"
+	"github.com/juju/juju/juju/arch"
 	coretesting "github.com/juju/juju/testing"
 	coretools "github.com/juju/juju/tools"
 	"github.com/juju/juju/version"
@@ -258,7 +259,13 @@ func (s *syncToolsSuite) TestAPIAdapterUploadTools(c *gc.C) {
 		},
 	}
 	a := syncToolsAPIAdapter{&fake}
-	err := a.UploadTools("released", "released", &coretools.Tools{Version: version.Current}, []byte("abc"))
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	err := a.UploadTools("released", "released", &coretools.Tools{Version: current}, []byte("abc"))
 	c.Assert(err, gc.Equals, uploadToolsErr)
 }
 

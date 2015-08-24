@@ -123,12 +123,12 @@ func (broker *lxcBroker) StartInstance(args environs.StartInstanceParams) (*envi
 	// include tools for architectures other than the host's. We
 	// must constrain to the host's architecture for LXC.
 	archTools, err := args.Tools.Match(tools.Filter{
-		Arch: arch.HostArch(),
+		Arch: version.Current.Arch,
 	})
 	if err == tools.ErrNoMatches {
 		return nil, errors.Errorf(
 			"need tools for arch %s, only found %s",
-			arch.HostArch(),
+			version.Current.Arch,
 			args.Tools.Arches(),
 		)
 	}

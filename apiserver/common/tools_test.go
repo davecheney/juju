@@ -15,6 +15,7 @@ import (
 	"github.com/juju/juju/apiserver/params"
 	apiservertesting "github.com/juju/juju/apiserver/testing"
 	"github.com/juju/juju/environs"
+	"github.com/juju/juju/juju/arch"
 	"github.com/juju/juju/juju/testing"
 	"github.com/juju/juju/network"
 	"github.com/juju/juju/state"
@@ -47,7 +48,13 @@ func (s *toolsSuite) TestTools(c *gc.C) {
 	tg := common.NewToolsGetter(s.State, s.State, s.State, sprintfURLGetter("tools:%s"), getCanRead)
 	c.Assert(tg, gc.NotNil)
 
-	err := s.machine0.SetAgentVersion(version.Current)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	err := s.machine0.SetAgentVersion(current)
 	c.Assert(err, jc.ErrorIsNil)
 
 	args := params.Entities{
@@ -61,8 +68,8 @@ func (s *toolsSuite) TestTools(c *gc.C) {
 	c.Assert(result.Results, gc.HasLen, 3)
 	c.Assert(result.Results[0].Error, gc.IsNil)
 	c.Assert(result.Results[0].Tools, gc.NotNil)
-	c.Assert(result.Results[0].Tools.Version, gc.DeepEquals, version.Current)
-	c.Assert(result.Results[0].Tools.URL, gc.Equals, "tools:"+version.Current.String())
+	c.Assert(result.Results[0].Tools.Version, gc.DeepEquals, current)
+	c.Assert(result.Results[0].Tools.URL, gc.Equals, "tools:"+current.String())
 	c.Assert(result.Results[0].DisableSSLHostnameVerification, jc.IsTrue)
 	c.Assert(result.Results[1].Error, gc.DeepEquals, apiservertesting.ErrUnauthorized)
 	c.Assert(result.Results[2].Error, gc.DeepEquals, apiservertesting.NotFoundError("machine 42"))
@@ -90,24 +97,30 @@ func (s *toolsSuite) TestSetTools(c *gc.C) {
 	ts := common.NewToolsSetter(s.State, getCanWrite)
 	c.Assert(ts, gc.NotNil)
 
-	err := s.machine0.SetAgentVersion(version.Current)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	err := s.machine0.SetAgentVersion(current)
 	c.Assert(err, jc.ErrorIsNil)
 
 	args := params.EntitiesVersion{
 		AgentTools: []params.EntityVersion{{
 			Tag: "machine-0",
 			Tools: &params.Version{
-				Version: version.Current,
+				Version: current,
 			},
 		}, {
 			Tag: "machine-1",
 			Tools: &params.Version{
-				Version: version.Current,
+				Version: current,
 			},
 		}, {
 			Tag: "machine-42",
 			Tools: &params.Version{
-				Version: version.Current,
+				Version: current,
 			},
 		}},
 	}
@@ -117,7 +130,7 @@ func (s *toolsSuite) TestSetTools(c *gc.C) {
 	c.Assert(result.Results[0].Error, gc.IsNil)
 	agentTools, err := s.machine0.AgentTools()
 	c.Assert(err, jc.ErrorIsNil)
-	c.Assert(agentTools.Version, gc.DeepEquals, version.Current)
+	c.Assert(agentTools.Version, gc.DeepEquals, current)
 	c.Assert(result.Results[1].Error, gc.DeepEquals, apiservertesting.ErrUnauthorized)
 	c.Assert(result.Results[2].Error, gc.DeepEquals, apiservertesting.NotFoundError("machine 42"))
 }
@@ -126,12 +139,18 @@ func (s *toolsSuite) TestToolsSetError(c *gc.C) {
 	getCanWrite := func() (common.AuthFunc, error) {
 		return nil, fmt.Errorf("splat")
 	}
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	ts := common.NewToolsSetter(s.State, getCanWrite)
 	args := params.EntitiesVersion{
 		AgentTools: []params.EntityVersion{{
 			Tag: "machine-42",
 			Tools: &params.Version{
-				Version: version.Current,
+				Version: current,
 			},
 		}},
 	}
@@ -222,7 +241,7 @@ func (s *toolsSuite) testFindToolsExact(c *gc.C, t common.ToolsStorageGetter, in
 		called = true
 		c.Assert(filter.Number, gc.Equals, version.Current.Number)
 		c.Assert(filter.Series, gc.Equals, version.Current.Series)
-		c.Assert(filter.Arch, gc.Equals, version.Current.Arch)
+		c.Assert(filter.Arch, gc.Equals, arch.HostArch())
 		if develVersion {
 			c.Assert(stream, gc.Equals, "devel")
 		} else {
@@ -236,7 +255,7 @@ func (s *toolsSuite) testFindToolsExact(c *gc.C, t common.ToolsStorageGetter, in
 		MajorVersion: -1,
 		MinorVersion: -1,
 		Series:       version.Current.Series,
-		Arch:         version.Current.Arch,
+		Arch:         arch.HostArch(),
 	})
 	c.Assert(err, jc.ErrorIsNil)
 	if inStorage {
@@ -271,13 +290,25 @@ func (s *toolsSuite) TestFindToolsToolsStorageError(c *gc.C) {
 
 func (s *toolsSuite) TestToolsURLGetterNoAPIHostPorts(c *gc.C) {
 	g := common.NewToolsURLGetter("my-uuid", mockAPIHostPortsGetter{})
-	_, err := g.ToolsURL(version.Current)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	_, err := g.ToolsURL(current)
 	c.Assert(err, gc.ErrorMatches, "no API host ports")
 }
 
 func (s *toolsSuite) TestToolsURLGetterAPIHostPortsError(c *gc.C) {
 	g := common.NewToolsURLGetter("my-uuid", mockAPIHostPortsGetter{err: errors.New("oh noes")})
-	_, err := g.ToolsURL(version.Current)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	_, err := g.ToolsURL(current)
 	c.Assert(err, gc.ErrorMatches, "oh noes")
 }
 
@@ -287,7 +318,13 @@ func (s *toolsSuite) TestToolsURLGetter(c *gc.C) {
 			network.NewHostPorts(1234, "0.1.2.3"),
 		},
 	})
-	url, err := g.ToolsURL(version.Current)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	url, err := g.ToolsURL(current)
 	c.Assert(err, jc.ErrorIsNil)
 	c.Assert(url, gc.Equals, "https://0.1.2.3:1234/environment/my-uuid/tools/"+version.Current.String())
 }

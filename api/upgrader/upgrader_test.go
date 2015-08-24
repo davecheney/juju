@@ -14,6 +14,7 @@ import (
 	"github.com/juju/juju/api"
 	"github.com/juju/juju/api/upgrader"
 	"github.com/juju/juju/apiserver/params"
+	"github.com/juju/juju/juju/arch"
 	"github.com/juju/juju/juju/testing"
 	"github.com/juju/juju/state"
 	statetesting "github.com/juju/juju/state/testing"
@@ -56,19 +57,36 @@ func (s *machineUpgraderSuite) TestNew(c *gc.C) {
 }
 
 func (s *machineUpgraderSuite) TestSetVersionWrongMachine(c *gc.C) {
-	err := s.st.SetVersion("machine-42", version.Current)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	err := s.st.SetVersion("machine-42", current)
 	c.Assert(err, gc.ErrorMatches, "permission denied")
 	c.Assert(err, jc.Satisfies, params.IsCodeUnauthorized)
 }
 
 func (s *machineUpgraderSuite) TestSetVersionNotMachine(c *gc.C) {
-	err := s.st.SetVersion("foo-42", version.Current)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	err := s.st.SetVersion("foo-42", current)
 	c.Assert(err, gc.ErrorMatches, "permission denied")
 	c.Assert(err, jc.Satisfies, params.IsCodeUnauthorized)
 }
 
 func (s *machineUpgraderSuite) TestSetVersion(c *gc.C) {
-	cur := version.Current
+	cur := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	agentTools, err := s.rawMachine.AgentTools()
 	c.Assert(err, jc.Satisfies, errors.IsNotFound)
 	c.Assert(agentTools, gc.IsNil)
@@ -95,7 +113,12 @@ func (s *machineUpgraderSuite) TestToolsNotMachine(c *gc.C) {
 }
 
 func (s *machineUpgraderSuite) TestTools(c *gc.C) {
-	cur := version.Current
+	cur := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	curTools := &tools.Tools{Version: cur, URL: ""}
 	curTools.Version.Minor++
 	s.rawMachine.SetAgentVersion(cur)
@@ -134,7 +157,12 @@ func (s *machineUpgraderSuite) TestWatchAPIVersion(c *gc.C) {
 }
 
 func (s *machineUpgraderSuite) TestDesiredVersion(c *gc.C) {
-	cur := version.Current
+	cur := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	curTools := &tools.Tools{Version: cur, URL: ""}
 	curTools.Version.Minor++
 	s.rawMachine.SetAgentVersion(cur)

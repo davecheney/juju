@@ -15,6 +15,7 @@ import (
 	gc "gopkg.in/check.v1"
 
 	"github.com/juju/juju/agent/tools"
+	"github.com/juju/juju/juju/arch"
 	"github.com/juju/juju/juju/names"
 	"github.com/juju/juju/version"
 	"github.com/juju/juju/worker/uniter/runner/jujuc"
@@ -27,8 +28,14 @@ type ToolsSuite struct {
 var _ = gc.Suite(&ToolsSuite{})
 
 func (s *ToolsSuite) SetUpTest(c *gc.C) {
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	s.dataDir = c.MkDir()
-	s.toolsDir = tools.SharedToolsDir(s.dataDir, version.Current)
+	s.toolsDir = tools.SharedToolsDir(s.dataDir, current)
 	err := os.MkdirAll(s.toolsDir, 0755)
 	c.Assert(err, jc.ErrorIsNil)
 	err = symlink.New(s.toolsDir, tools.ToolsDir(s.dataDir, "unit-u-123"))

@@ -27,6 +27,7 @@ import (
 	"github.com/juju/juju/container"
 	"github.com/juju/juju/feature"
 	"github.com/juju/juju/instance"
+	"github.com/juju/juju/juju/arch"
 	"github.com/juju/juju/juju/testing"
 	"github.com/juju/juju/mongo"
 	"github.com/juju/juju/network"
@@ -784,7 +785,13 @@ func (s *provisionerSuite) TestFindToolsLogicError(c *gc.C) {
 }
 
 func (s *provisionerSuite) testFindTools(c *gc.C, matchArch bool, apiError, logicError error) {
-	var toolsList = coretools.List{&coretools.Tools{Version: version.Current}}
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	var toolsList = coretools.List{&coretools.Tools{Version: current}}
 	var called bool
 	provisioner.PatchFacadeCall(s, s.provisioner, func(request string, args, response interface{}) error {
 		called = true
@@ -796,7 +803,7 @@ func (s *provisionerSuite) testFindTools(c *gc.C, matchArch bool, apiError, logi
 			MajorVersion: -1,
 		}
 		if matchArch {
-			expected.Arch = version.Current.Arch
+			expected.Arch = current.Arch
 		}
 		c.Assert(args, gc.Equals, expected)
 		result := response.(*params.FindToolsResult)
@@ -809,7 +816,7 @@ func (s *provisionerSuite) testFindTools(c *gc.C, matchArch bool, apiError, logi
 
 	var arch *string
 	if matchArch {
-		arch = &version.Current.Arch
+		arch = &current.Arch
 	}
 	apiList, err := s.provisioner.FindTools(version.Current.Number, version.Current.Series, arch)
 	c.Assert(called, jc.IsTrue)

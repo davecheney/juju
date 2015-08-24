@@ -19,7 +19,6 @@ import (
 
 	"github.com/juju/juju/agent"
 	"github.com/juju/juju/cloudconfig/instancecfg"
-	"github.com/juju/juju/constraints"
 	"github.com/juju/juju/container"
 	"github.com/juju/juju/container/kvm/mock"
 	kvmtesting "github.com/juju/juju/container/kvm/testing"
@@ -111,13 +110,11 @@ func (s *kvmBrokerSuite) instanceConfig(c *gc.C, machineId string) *instancecfg.
 
 func (s *kvmBrokerSuite) startInstance(c *gc.C, machineId string) instance.Instance {
 	instanceConfig := s.instanceConfig(c, machineId)
-	cons := constraints.Value{}
 	possibleTools := coretools.List{&coretools.Tools{
 		Version: version.MustParseBinary("2.3.4-quantal-amd64"),
 		URL:     "http://tools.testing.invalid/2.3.4-quantal-amd64.tgz",
 	}}
 	result, err := s.broker.StartInstance(environs.StartInstanceParams{
-		Constraints:    cons,
 		Tools:          possibleTools,
 		InstanceConfig: instanceConfig,
 	})
@@ -131,13 +128,11 @@ func (s *kvmBrokerSuite) maintainInstance(c *gc.C, machineId string) {
 	apiInfo := jujutesting.FakeAPIInfo(machineId)
 	instanceConfig, err := instancecfg.NewInstanceConfig(machineId, machineNonce, "released", "quantal", true, nil, stateInfo, apiInfo)
 	c.Assert(err, jc.ErrorIsNil)
-	cons := constraints.Value{}
 	possibleTools := coretools.List{&coretools.Tools{
 		Version: version.MustParseBinary("2.3.4-quantal-amd64"),
 		URL:     "http://tools.testing.invalid/2.3.4-quantal-amd64.tgz",
 	}}
 	err = s.broker.MaintainInstance(environs.StartInstanceParams{
-		Constraints:    cons,
 		Tools:          possibleTools,
 		InstanceConfig: instanceConfig,
 	})
@@ -251,7 +246,6 @@ func (s *kvmBrokerSuite) TestStartInstancePopulatesNetworkInfo(c *gc.C) {
 		URL:     "http://tools.testing.invalid/2.3.4-quantal-amd64.tgz",
 	}}
 	result, err := s.broker.StartInstance(environs.StartInstanceParams{
-		Constraints:    constraints.Value{},
 		Tools:          possibleTools,
 		InstanceConfig: instanceConfig,
 	})

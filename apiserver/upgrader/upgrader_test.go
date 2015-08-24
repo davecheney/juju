@@ -15,6 +15,7 @@ import (
 	"github.com/juju/juju/apiserver/params"
 	apiservertesting "github.com/juju/juju/apiserver/testing"
 	"github.com/juju/juju/apiserver/upgrader"
+	"github.com/juju/juju/juju/arch"
 	jujutesting "github.com/juju/juju/juju/testing"
 	"github.com/juju/juju/state"
 	statetesting "github.com/juju/juju/state/testing"
@@ -152,7 +153,13 @@ func (s *upgraderSuite) TestToolsForAgent(c *gc.C) {
 	// The machine must have its existing tools set before we query for the
 	// next tools. This is so that we can grab Arch and Series without
 	// having to pass it in again
-	err := s.rawMachine.SetAgentVersion(version.Current)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	err := s.rawMachine.SetAgentVersion(current)
 	c.Assert(err, jc.ErrorIsNil)
 
 	args := params.Entities{Entities: []params.Entity{agent}}
@@ -182,11 +189,17 @@ func (s *upgraderSuite) TestSetToolsRefusesWrongAgent(c *gc.C) {
 	anAuthorizer.Tag = names.NewMachineTag("12354")
 	anUpgrader, err := upgrader.NewUpgraderAPI(s.State, s.resources, anAuthorizer)
 	c.Check(err, jc.ErrorIsNil)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	args := params.EntitiesVersion{
 		AgentTools: []params.EntityVersion{{
 			Tag: s.rawMachine.Tag().String(),
 			Tools: &params.Version{
-				Version: version.Current,
+				Version: current,
 			},
 		}},
 	}
@@ -197,7 +210,12 @@ func (s *upgraderSuite) TestSetToolsRefusesWrongAgent(c *gc.C) {
 }
 
 func (s *upgraderSuite) TestSetTools(c *gc.C) {
-	cur := version.Current
+	cur := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	_, err := s.rawMachine.AgentTools()
 	c.Assert(err, jc.Satisfies, errors.IsNotFound)
 	args := params.EntitiesVersion{
@@ -282,9 +300,15 @@ func (s *upgraderSuite) TestDesiredVersionForAgent(c *gc.C) {
 func (s *upgraderSuite) bumpDesiredAgentVersion(c *gc.C) version.Number {
 	// In order to call SetEnvironAgentVersion we have to first SetTools on
 	// all the existing machines
-	s.apiMachine.SetAgentVersion(version.Current)
-	s.rawMachine.SetAgentVersion(version.Current)
-	newer := version.Current
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	s.apiMachine.SetAgentVersion(current)
+	s.rawMachine.SetAgentVersion(current)
+	newer := current
 	newer.Patch++
 	err := s.State.SetEnvironAgentVersion(newer.Number)
 	c.Assert(err, jc.ErrorIsNil)

@@ -111,8 +111,6 @@ func (s *lxcBrokerSuite) SetUpTest(c *gc.C) {
 
 func (s *lxcBrokerSuite) instanceConfig(c *gc.C, machineId string) *instancecfg.InstanceConfig {
 	machineNonce := "fake-nonce"
-	// To isolate the tests from the host's architecture, we override it here.
-	s.PatchValue(&version.Current.Arch, arch.AMD64)
 	stateInfo := jujutesting.FakeStateInfo(machineId)
 	apiInfo := jujutesting.FakeAPIInfo(machineId)
 	instanceConfig, err := instancecfg.NewInstanceConfig(machineId, machineNonce, "released", "quantal", true, nil, stateInfo, apiInfo)
@@ -124,13 +122,11 @@ func (s *lxcBrokerSuite) instanceConfig(c *gc.C, machineId string) *instancecfg.
 
 func (s *lxcBrokerSuite) startInstance(c *gc.C, machineId string, volumes []storage.VolumeParams) instance.Instance {
 	instanceConfig := s.instanceConfig(c, machineId)
-	cons := constraints.Value{}
 	possibleTools := coretools.List{&coretools.Tools{
 		Version: version.MustParseBinary("2.3.4-quantal-amd64"),
 		URL:     "http://tools.testing.invalid/2.3.4-quantal-amd64.tgz",
 	}}
 	result, err := s.broker.StartInstance(environs.StartInstanceParams{
-		Constraints:    cons,
 		Tools:          possibleTools,
 		InstanceConfig: instanceConfig,
 		Volumes:        volumes,
@@ -141,13 +137,11 @@ func (s *lxcBrokerSuite) startInstance(c *gc.C, machineId string, volumes []stor
 
 func (s *lxcBrokerSuite) maintainInstance(c *gc.C, machineId string, volumes []storage.VolumeParams) {
 	instanceConfig := s.instanceConfig(c, machineId)
-	cons := constraints.Value{}
 	possibleTools := coretools.List{&coretools.Tools{
 		Version: version.MustParseBinary("2.3.4-quantal-amd64"),
 		URL:     "http://tools.testing.invalid/2.3.4-quantal-amd64.tgz",
 	}}
 	err := s.broker.MaintainInstance(environs.StartInstanceParams{
-		Constraints:    cons,
 		Tools:          possibleTools,
 		InstanceConfig: instanceConfig,
 		Volumes:        volumes,
@@ -271,9 +265,8 @@ func (s *lxcBrokerSuite) TestStartInstanceLoopMountsDisallowed(c *gc.C) {
 func (s *lxcBrokerSuite) TestStartInstanceHostArch(c *gc.C) {
 	instanceConfig := s.instanceConfig(c, "1/lxc/0")
 
-	// Patch the host's arch, so the LXC broker will filter tools. We don't use PatchValue
-	// because instanceConfig already has, so it will restore version.Current.Arch during TearDownTest
-	version.Current.Arch = arch.PPC64EL
+	// Patch the host's arch, so the LXC broker will filter tools.
+	s.PatchValue(&version.Current.Arch, arch.PPC64EL)
 	possibleTools := coretools.List{&coretools.Tools{
 		Version: version.MustParseBinary("2.3.4-quantal-amd64"),
 		URL:     "http://tools.testing.invalid/2.3.4-quantal-amd64.tgz",
@@ -282,7 +275,6 @@ func (s *lxcBrokerSuite) TestStartInstanceHostArch(c *gc.C) {
 		URL:     "http://tools.testing.invalid/2.3.4-quantal-ppc64el.tgz",
 	}}
 	_, err := s.broker.StartInstance(environs.StartInstanceParams{
-		Constraints:    constraints.Value{},
 		Tools:          possibleTools,
 		InstanceConfig: instanceConfig,
 	})
@@ -293,15 +285,13 @@ func (s *lxcBrokerSuite) TestStartInstanceHostArch(c *gc.C) {
 func (s *lxcBrokerSuite) TestStartInstanceToolsArchNotFound(c *gc.C) {
 	instanceConfig := s.instanceConfig(c, "1/lxc/0")
 
-	// Patch the host's arch, so the LXC broker will filter tools. We don't use PatchValue
-	// because instanceConfig already has, so it will restore version.Current.Arch during TearDownTest
-	version.Current.Arch = arch.PPC64EL
+	// Patch the host's arch, so the LXC broker will filter tools.
+	s.PatchValue(&version.Current.Arch, arch.PPC64EL)
 	possibleTools := coretools.List{&coretools.Tools{
 		Version: version.MustParseBinary("2.3.4-quantal-amd64"),
 		URL:     "http://tools.testing.invalid/2.3.4-quantal-amd64.tgz",
 	}}
 	_, err := s.broker.StartInstance(environs.StartInstanceParams{
-		Constraints:    constraints.Value{},
 		Tools:          possibleTools,
 		InstanceConfig: instanceConfig,
 	})

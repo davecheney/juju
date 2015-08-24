@@ -24,6 +24,7 @@ import (
 	envtesting "github.com/juju/juju/environs/testing"
 	"github.com/juju/juju/environs/tools"
 	toolstesting "github.com/juju/juju/environs/tools/testing"
+	"github.com/juju/juju/juju/arch"
 	jujutesting "github.com/juju/juju/juju/testing"
 	"github.com/juju/juju/network"
 	_ "github.com/juju/juju/provider/dummy"
@@ -317,7 +318,10 @@ func (s *UpgradeJujuSuite) TestUpgradeJuju(c *gc.C) {
 		tools.DefaultBaseURL = ""
 
 		// Set up apparent CLI version and initialize the command.
-		version.Current = version.MustParseBinary(test.currentVersion)
+		newVersion := version.MustParseBinary(test.currentVersion)
+		version.Current.Number = newVersion.Number
+		version.Current.Series = newVersion.Series
+		version.Current.OS = newVersion.OS
 		com := &UpgradeJujuCommand{}
 		if err := coretesting.InitCommand(envcmd.Wrap(com), test.args); err != nil {
 			if test.expectInitErr != "" {
@@ -444,7 +448,12 @@ func (s *UpgradeJujuSuite) TestUpgradeJujuWithRealUpload(c *gc.C) {
 	cmd := envcmd.Wrap(&UpgradeJujuCommand{})
 	_, err := coretesting.RunCommand(c, cmd, "--upload-tools")
 	c.Assert(err, jc.ErrorIsNil)
-	vers := version.Current
+	vers := version.Binary {
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch: arch.HostArch(),
+		OS: version.Current.OS,
+	}
 	vers.Build = 1
 	s.checkToolsUploaded(c, vers, vers.Number)
 }
@@ -678,7 +687,12 @@ func (s *UpgradeJujuSuite) TestResetPreviousUpgrade(c *gc.C) {
 }
 
 func NewFakeUpgradeJujuAPI(c *gc.C, st *state.State) *fakeUpgradeJujuAPI {
-	nextVersion := version.Current
+	nextVersion := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	nextVersion.Minor++
 	return &fakeUpgradeJujuAPI{
 		c:           c,

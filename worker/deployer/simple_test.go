@@ -18,6 +18,7 @@ import (
 
 	"github.com/juju/juju/agent"
 	"github.com/juju/juju/agent/tools"
+	"github.com/juju/juju/juju/arch"
 	svctesting "github.com/juju/juju/service/common/testing"
 	"github.com/juju/juju/service/upstart"
 	"github.com/juju/juju/state/multiwatcher"
@@ -156,14 +157,20 @@ var fakeJujud = "#!/bin/bash --norc\n# fake-jujud\nexit 0\n"
 func (fix *SimpleToolsFixture) SetUp(c *gc.C, dataDir string) {
 	fix.dataDir = dataDir
 	fix.logDir = c.MkDir()
-	toolsDir := tools.SharedToolsDir(fix.dataDir, version.Current)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	toolsDir := tools.SharedToolsDir(fix.dataDir, current)
 	err := os.MkdirAll(toolsDir, 0755)
 	c.Assert(err, jc.ErrorIsNil)
 	jujudPath := filepath.Join(toolsDir, "jujud")
 	err = ioutil.WriteFile(jujudPath, []byte(fakeJujud), 0755)
 	c.Assert(err, jc.ErrorIsNil)
 	toolsPath := filepath.Join(toolsDir, "downloaded-tools.txt")
-	testTools := coretools.Tools{Version: version.Current, URL: "http://testing.invalid/tools"}
+	testTools := coretools.Tools{Version: current, URL: "http://testing.invalid/tools"}
 	data, err := json.Marshal(testTools)
 	c.Assert(err, jc.ErrorIsNil)
 	err = ioutil.WriteFile(toolsPath, data, 0644)

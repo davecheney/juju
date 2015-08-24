@@ -170,6 +170,12 @@ func (s *ContainerSetupSuite) assertContainerProvisionerStarted(
 }
 
 func (s *ContainerSetupSuite) TestContainerProvisionerStarted(c *gc.C) {
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	for _, ctype := range instance.ContainerTypes {
 		// create a machine to host the container.
 		m, err := s.BackingState.AddOneMachine(state.MachineTemplate{
@@ -180,7 +186,7 @@ func (s *ContainerSetupSuite) TestContainerProvisionerStarted(c *gc.C) {
 		c.Assert(err, jc.ErrorIsNil)
 		err = m.SetSupportedContainers([]instance.ContainerType{instance.LXC, instance.KVM})
 		c.Assert(err, jc.ErrorIsNil)
-		err = m.SetAgentVersion(version.Current)
+		err = m.SetAgentVersion(current)
 		c.Assert(err, jc.ErrorIsNil)
 		s.assertContainerProvisionerStarted(c, m, ctype)
 	}
@@ -241,6 +247,12 @@ func (s *ContainerSetupSuite) testContainerConstraintsArch(c *gc.C, containerTyp
 }
 
 func (s *ContainerSetupSuite) TestLxcContainerUsesImageURL(c *gc.C) {
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	// create a machine to host the container.
 	m, err := s.BackingState.AddOneMachine(state.MachineTemplate{
 		Series:      coretesting.FakeDefaultSeries,
@@ -250,7 +262,7 @@ func (s *ContainerSetupSuite) TestLxcContainerUsesImageURL(c *gc.C) {
 	c.Assert(err, jc.ErrorIsNil)
 	err = m.SetSupportedContainers([]instance.ContainerType{instance.LXC, instance.KVM})
 	c.Assert(err, jc.ErrorIsNil)
-	err = m.SetAgentVersion(version.Current)
+	err = m.SetAgentVersion(current)
 	c.Assert(err, jc.ErrorIsNil)
 
 	brokerCalled := false
@@ -281,6 +293,12 @@ func (s *ContainerSetupSuite) TestContainerManagerConfigName(c *gc.C) {
 }
 
 func (s *ContainerSetupSuite) assertContainerInitialised(c *gc.C, ctype instance.ContainerType, packages [][]string, addressable bool) {
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	// A noop worker callback.
 	startProvisionerWorker := func(runner worker.Runner, containerType instance.ContainerType,
 		pr *apiprovisioner.State, cfg agent.Config, broker environs.InstanceBroker,
@@ -298,7 +316,7 @@ func (s *ContainerSetupSuite) assertContainerInitialised(c *gc.C, ctype instance
 	c.Assert(err, jc.ErrorIsNil)
 	err = m.SetSupportedContainers([]instance.ContainerType{instance.LXC, instance.KVM})
 	c.Assert(err, jc.ErrorIsNil)
-	err = m.SetAgentVersion(version.Current)
+	err = m.SetAgentVersion(current)
 	c.Assert(err, jc.ErrorIsNil)
 
 	// Before starting /etc/default/lxc-net should be missing.
@@ -347,13 +365,19 @@ func (s *ContainerSetupSuite) TestContainerInitialised(c *gc.C) {
 }
 
 func (s *ContainerSetupSuite) TestContainerInitLockError(c *gc.C) {
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	m, err := s.BackingState.AddOneMachine(state.MachineTemplate{
 		Series:      coretesting.FakeDefaultSeries,
 		Jobs:        []state.MachineJob{state.JobHostUnits},
 		Constraints: s.defaultConstraints,
 	})
 	c.Assert(err, jc.ErrorIsNil)
-	err = m.SetAgentVersion(version.Current)
+	err = m.SetAgentVersion(current)
 	c.Assert(err, jc.ErrorIsNil)
 
 	err = os.RemoveAll(s.initLockDir)
@@ -530,6 +554,12 @@ func (s *LXCDefaultMTUSuite) SetUpTest(c *gc.C) {
 }
 
 func (s *LXCDefaultMTUSuite) TestDefaultMTUPropagatedToNewLXCBroker(c *gc.C) {
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	// create a machine to host the container.
 	m, err := s.BackingState.AddOneMachine(state.MachineTemplate{
 		Series:      coretesting.FakeDefaultSeries,
@@ -539,7 +569,7 @@ func (s *LXCDefaultMTUSuite) TestDefaultMTUPropagatedToNewLXCBroker(c *gc.C) {
 	c.Assert(err, jc.ErrorIsNil)
 	err = m.SetSupportedContainers([]instance.ContainerType{instance.LXC, instance.KVM})
 	c.Assert(err, jc.ErrorIsNil)
-	err = m.SetAgentVersion(version.Current)
+	err = m.SetAgentVersion(current)
 	c.Assert(err, jc.ErrorIsNil)
 
 	brokerCalled := false
