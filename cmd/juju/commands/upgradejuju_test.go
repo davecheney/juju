@@ -448,11 +448,11 @@ func (s *UpgradeJujuSuite) TestUpgradeJujuWithRealUpload(c *gc.C) {
 	cmd := envcmd.Wrap(&UpgradeJujuCommand{})
 	_, err := coretesting.RunCommand(c, cmd, "--upload-tools")
 	c.Assert(err, jc.ErrorIsNil)
-	vers := version.Binary {
+	vers := version.Binary{
 		Number: version.Current.Number,
 		Series: version.Current.Series,
-		Arch: arch.HostArch(),
-		OS: version.Current.OS,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
 	}
 	vers.Build = 1
 	s.checkToolsUploaded(c, vers, vers.Number)

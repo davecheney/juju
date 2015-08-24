@@ -16,7 +16,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/juju/juju/juju/arch"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -38,16 +37,13 @@ var osVers = mustOSVersion()
 // "FORCE-VERSION" is present in the same directory as the running
 // binary, it will override this.
 
-/*var Current = struct {
+var Current = struct {
 	Number
 	Series string
 	OS     OSType
 }{
-*/
-var Current = Binary{
 	Number: MustParse(version),
 	Series: osVers,
-	Arch:   arch.HostArch(),
 	OS:     MustOSFromSeries(osVers),
 }
 
