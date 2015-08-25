@@ -38,7 +38,7 @@ type ToolsFixture struct {
 
 	// UploadArches holds the architectures of tools to
 	// upload in UploadFakeTools. If empty, it will default
-	// to just version.Current.Arch.
+	// to just arch.HostArch()
 	UploadArches []string
 }
 
