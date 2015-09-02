@@ -20,6 +20,7 @@ import (
 	"github.com/juju/juju/environs/storage"
 	envtesting "github.com/juju/juju/environs/testing"
 	"github.com/juju/juju/instance"
+	"github.com/juju/juju/juju/arch"
 	"github.com/juju/juju/network"
 	"github.com/juju/juju/provider/common"
 	coretesting "github.com/juju/juju/testing"
@@ -116,10 +117,16 @@ func (s *BootstrapSuite) TestCannotStartInstance(c *gc.C) {
 	env.startInstance = startInstance
 
 	ctx := envtesting.BootstrapContext(c)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	_, _, _, err := common.Bootstrap(ctx, env, environs.BootstrapParams{
 		Constraints:    checkCons,
 		Placement:      checkPlacement,
-		AvailableTools: tools.List{&tools.Tools{Version: version.Current}},
+		AvailableTools: tools.List{&tools.Tools{Version: current}},
 	})
 	c.Assert(err, gc.ErrorMatches, "cannot start bootstrap instance: meh, not started")
 }
@@ -155,8 +162,14 @@ func (s *BootstrapSuite) TestSuccess(c *gc.C) {
 		setConfig:     setConfig,
 	}
 	ctx := envtesting.BootstrapContext(c)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	arch, series, _, err := common.Bootstrap(ctx, env, environs.BootstrapParams{
-		AvailableTools: tools.List{&tools.Tools{Version: version.Current}},
+		AvailableTools: tools.List{&tools.Tools{Version: current}},
 	})
 	c.Assert(err, jc.ErrorIsNil)
 	c.Assert(arch, gc.Equals, "ppc64el") // based on hardware characteristics

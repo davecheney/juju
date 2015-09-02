@@ -39,6 +39,7 @@ import (
 	envtesting "github.com/juju/juju/environs/testing"
 	envtools "github.com/juju/juju/environs/tools"
 	"github.com/juju/juju/instance"
+	"github.com/juju/juju/juju/arch"
 	jujutesting "github.com/juju/juju/juju/testing"
 	"github.com/juju/juju/mongo"
 	"github.com/juju/juju/network"
@@ -110,12 +111,18 @@ func (s *BootstrapSuite) SetUpTest(c *gc.C) {
 	s.PatchValue(&maybeInitiateMongoServer, s.fakeEnsureMongo.InitiateMongo)
 
 	// Create fake tools.tar.gz and downloaded-tools.txt.
-	toolsDir := filepath.FromSlash(agenttools.SharedToolsDir(s.dataDir, version.Current))
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	toolsDir := filepath.FromSlash(agenttools.SharedToolsDir(s.dataDir, current))
 	err := os.MkdirAll(toolsDir, 0755)
 	c.Assert(err, jc.ErrorIsNil)
 	err = ioutil.WriteFile(filepath.Join(toolsDir, "tools.tar.gz"), nil, 0644)
 	c.Assert(err, jc.ErrorIsNil)
-	s.writeDownloadedTools(c, &tools.Tools{Version: version.Current})
+	s.writeDownloadedTools(c, &tools.Tools{Version: current})
 }
 
 func (s *BootstrapSuite) TearDownTest(c *gc.C) {
@@ -543,8 +550,14 @@ func (s *BootstrapSuite) TestDownloadedToolsMetadata(c *gc.C) {
 
 func (s *BootstrapSuite) TestUploadedToolsMetadata(c *gc.C) {
 	// Tools uploaded over ssh.
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
 	s.writeDownloadedTools(c, &tools.Tools{
-		Version: version.Current,
+		Version: current,
 		URL:     "file:///does/not/matter",
 	})
 	s.testToolsMetadata(c, true)

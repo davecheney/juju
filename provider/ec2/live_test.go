@@ -87,11 +87,11 @@ func (t *LiveTests) TearDownSuite(c *gc.C) {
 }
 
 func (t *LiveTests) SetUpTest(c *gc.C) {
-	t.BaseSuite.PatchValue(&version.Current, version.Binary{
-		Number: coretesting.FakeVersionNumber,
-		Series: coretesting.FakeDefaultSeries,
-		Arch:   arch.AMD64,
-	})
+	fake := version.Current
+	fake.Number = coretesting.FakeVersionNumber
+	fake.Series = coretesting.FakeDefaultSeries
+	fake.OS = 0 // this is not a mistake
+	t.BaseSuite.PatchValue(&version.Current, fake)
 	t.BaseSuite.SetUpTest(c)
 	t.LiveTests.SetUpTest(c)
 }
