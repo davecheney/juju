@@ -22,6 +22,7 @@ import (
 	apirsyslog "github.com/juju/juju/api/rsyslog"
 	agenttesting "github.com/juju/juju/cmd/jujud/agent/testing"
 	envtesting "github.com/juju/juju/environs/testing"
+	"github.com/juju/juju/juju/arch"
 	jujutesting "github.com/juju/juju/juju/testing"
 	"github.com/juju/juju/network"
 	"github.com/juju/juju/state"
@@ -82,7 +83,13 @@ func (s *UnitSuite) primeAgent(c *gc.C) (*state.Machine, *state.Unit, agent.Conf
 	inst, md := jujutesting.AssertStartInstance(c, s.Environ, id)
 	err = machine.SetProvisioned(inst.Id(), agent.BootstrapNonce, md)
 	c.Assert(err, jc.ErrorIsNil)
-	conf, tools := s.PrimeAgent(c, unit.Tag(), initialUnitPassword, version.Current)
+	current := version.Binary{
+		Number: version.Current.Number,
+		Series: version.Current.Series,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
+	}
+	conf, tools := s.PrimeAgent(c, unit.Tag(), initialUnitPassword, current)
 	return machine, unit, conf, tools
 }
 
