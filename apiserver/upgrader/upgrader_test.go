@@ -147,7 +147,6 @@ func (s *upgraderSuite) TestToolsRefusesWrongAgent(c *gc.C) {
 }
 
 func (s *upgraderSuite) TestToolsForAgent(c *gc.C) {
-	cur := version.Current
 	agent := params.Entity{Tag: s.rawMachine.Tag().String()}
 
 	// The machine must have its existing tools set before we query for the
@@ -172,7 +171,7 @@ func (s *upgraderSuite) TestToolsForAgent(c *gc.C) {
 		url := fmt.Sprintf("https://%s/environment/%s/tools/%s",
 			s.APIState.Addr(), coretesting.EnvironmentTag.Id(), version.Current)
 		c.Check(agentTools.URL, gc.Equals, url)
-		c.Check(agentTools.Version, gc.DeepEquals, cur)
+		c.Check(agentTools.Version, gc.DeepEquals, current)
 	}
 	assertTools()
 }
