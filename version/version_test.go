@@ -167,7 +167,6 @@ func binaryVersion(major, minor, patch, build int, tag, series, arch string) ver
 		},
 		Series: series,
 		Arch:   arch,
-		OS:     os.Ubuntu,
 	}
 }
 
@@ -221,7 +220,6 @@ func (*suite) TestParseBinary(c *gc.C) {
 			Number: test.expect,
 			Series: "trusty",
 			Arch:   "amd64",
-			OS:     os.Ubuntu,
 		}
 		if test.err != "" {
 			c.Assert(err, gc.ErrorMatches, strings.Replace(test.err, "version", "binary version", 1))

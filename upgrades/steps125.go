@@ -4,6 +4,7 @@
 package upgrades
 
 import (
+	"runtime"
 	"strings"
 
 	"github.com/juju/errors"
@@ -111,7 +112,7 @@ func stepsFor125() []Step {
 // The Jujud.pass file was created during cloud init before
 // so we know it's location for sure in case it exists
 func removeJujudpass(context Context) error {
-	if os.HostOS() == os.Windows {
+	if runtime.GOOS == "windows" {
 		fileLocation := "C:\\Juju\\Jujud.pass"
 		if err := osRemove(fileLocation); err != nil {
 			// Don't fail the step if we can't get rid of the old files.
@@ -129,7 +130,7 @@ var execRunCommands = exec.RunCommands
 // Since support for ACL's in golang is quite disastrous at the moment, and they're
 // not especially easy to use, this is done using the exact same steps used in cloudinit
 func addJujuRegKey(context Context) error {
-	if os.HostOS() == os.Windows {
+	if runtime.GOOS == "windows" {
 		cmds := cloudconfig.CreateJujuRegistryKeyCmds()
 		_, err := execRunCommands(exec.RunParams{
 			Commands: strings.Join(cmds, "\n"),

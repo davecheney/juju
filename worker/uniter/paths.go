@@ -7,6 +7,7 @@ package uniter
 import (
 	"fmt"
 	"path/filepath"
+	"runtime"
 
 	"github.com/juju/names"
 	"github.com/juju/utils/os"
@@ -105,14 +106,16 @@ func NewPaths(dataDir string, unitTag names.UnitTag) Paths {
 	stateDir := join(baseDir, "state")
 
 	socket := func(name string, abstract bool) string {
-		if os.HostOS() == os.Windows {
+		switch runtime.GOOS {
+		case "windows":
 			return fmt.Sprintf(`\\.\pipe\%s-%s`, unitTag, name)
+		default:
+			path := join(baseDir, name+".socket")
+			if abstract {
+				path = "@" + path
+			}
+			return path
 		}
-		path := join(baseDir, name+".socket")
-		if abstract {
-			path = "@" + path
-		}
-		return path
 	}
 
 	toolsDir := tools.ToolsDir(dataDir, unitTag.String())

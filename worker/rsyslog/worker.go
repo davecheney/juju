@@ -95,7 +95,7 @@ var NewRsyslogConfigWorker = newRsyslogConfigWorker
 // on changes. The worker will remove the configuration file
 // on teardown.
 func newRsyslogConfigWorker(st *apirsyslog.State, mode RsyslogMode, tag names.Tag, namespace string, stateServerAddrs []string, jujuConfigDir string) (worker.Worker, error) {
-	if jujuos.HostOS() == jujuos.Windows && mode == RsyslogModeAccumulate {
+	if runtime.GOOS == "windows" && mode == RsyslogModeAccumulate {
 		return worker.NewNoOpWorker(), nil
 	}
 	handler, err := newRsyslogConfigHandler(st, mode, tag, namespace, stateServerAddrs, jujuConfigDir)

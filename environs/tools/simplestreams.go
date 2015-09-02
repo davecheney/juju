@@ -196,15 +196,10 @@ func (t *ToolsMetadata) binary() (version.Binary, error) {
 	if err != nil {
 		return version.Binary{}, errors.Trace(err)
 	}
-	toolsOS, err := series.GetOSFromSeries(t.Release)
-	if err != nil && !series.IsUnknownOSForSeriesError(err) {
-		return version.Binary{}, errors.Trace(err)
-	}
 	return version.Binary{
 		Number: num,
 		Series: t.Release,
 		Arch:   t.Arch,
-		OS:     toolsOS,
 	}, nil
 }
 

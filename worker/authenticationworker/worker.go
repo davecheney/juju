@@ -4,6 +4,7 @@
 package authenticationworker
 
 import (
+	"runtime"
 	"strings"
 
 	"github.com/juju/errors"
@@ -43,11 +44,13 @@ var _ worker.NotifyWatchHandler = (*keyupdaterWorker)(nil)
 // the machine's authorised ssh keys and ensures the
 // ~/.ssh/authorized_keys file is up to date.
 func NewWorker(st *keyupdater.State, agentConfig agent.Config) worker.Worker {
-	if os.HostOS() == os.Windows {
+	switch runtime.GOOS {
+	case "windows":
 		return worker.NewNoOpWorker()
+	default:
+		kw := &keyupdaterWorker{st: st, tag: agentConfig.Tag().(names.MachineTag)}
+		return worker.NewNotifyWorker(kw)
 	}
-	kw := &keyupdaterWorker{st: st, tag: agentConfig.Tag().(names.MachineTag)}
-	return worker.NewNotifyWorker(kw)
 }
 
 // SetUp is defined on the worker.NotifyWatchHandler interface.

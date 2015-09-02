@@ -328,10 +328,15 @@ func (c *BootstrapCommand) populateTools(st *state.State, env environs.Environ) 
 	}
 	defer storage.Close()
 
+	toolos, err := version.GetOSFromSeries(tools.Version.Series)
+	if err != nil {
+		return err
+	}
+
 	var toolsVersions []version.Binary
 	if strings.HasPrefix(tools.URL, "file://") {
 		// Tools were uploaded: clone for each series of the same OS.
-		osSeries := series.OSSupportedSeries(tools.Version.OS)
+		osSeries := series.OSSupportedSeries(toolsos)
 		for _, ser := range osSeries {
 			toolsVersion := tools.Version
 			toolsVersion.Series = ser
