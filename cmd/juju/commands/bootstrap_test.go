@@ -58,6 +58,14 @@ func (s *BootstrapSuite) SetUpSuite(c *gc.C) {
 	s.MgoSuite.SetUpSuite(c)
 }
 
+func (s *BootstrapSuite) patchVersion(v version.Binary) {
+	fake := version.Current
+	fake.Number = v.Number
+	fake.Series = v.Series
+	fake.OS = v.OS
+	s.PatchValue(&version.Current, fake)
+}
+
 func (s *BootstrapSuite) SetUpTest(c *gc.C) {
 	s.FakeJujuHomeSuite.SetUpTest(c)
 	s.MgoSuite.SetUpTest(c)
@@ -66,7 +74,7 @@ func (s *BootstrapSuite) SetUpTest(c *gc.C) {
 	// Set version.Current to a known value, for which we
 	// will make tools available. Individual tests may
 	// override this.
-	s.PatchValue(&version.Current, v100p64)
+	s.patchVersion(v100p64)
 
 	// Set up a local source with tools.
 	sourceDir := createToolsSource(c, vAll)

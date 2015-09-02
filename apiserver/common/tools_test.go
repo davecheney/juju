@@ -214,6 +214,15 @@ func (s *toolsSuite) TestFindToolsNotFound(c *gc.C) {
 	c.Assert(result.Error, jc.Satisfies, params.IsCodeNotFound)
 }
 
+func (s *toolsSuite) patchVersion(v version.Binary) {
+	s.PatchValue(&arch.HostArch, func() string { return v.Arch })
+	fake := version.Current
+	fake.Number = v.Number
+	fake.Series = v.Series
+	fake.OS = v.OS
+	s.PatchValue(&version.Current, fake)
+}
+
 func (s *toolsSuite) TestFindToolsExactInStorage(c *gc.C) {
 	mockToolsStorage := &mockToolsStorage{
 		metadata: []toolstorage.Metadata{
@@ -221,11 +230,9 @@ func (s *toolsSuite) TestFindToolsExactInStorage(c *gc.C) {
 			{Version: version.MustParseBinary("1.22.0-trusty-amd64")},
 		},
 	}
-
-	s.PatchValue(&arch.HostArch, func() string { return arch.AMD64 })
-	s.PatchValue(&version.Current, version.MustParseBinary("1.22-beta1-trusty-amd64"))
+	s.patchVersion(version.MustParseBinary("1.22-beta1-trusty-amd64"))
 	s.testFindToolsExact(c, mockToolsStorage, true, true)
-	s.PatchValue(&version.Current, version.MustParseBinary("1.22.0-trusty-amd64"))
+	s.patchVersion(version.MustParseBinary("1.22.0-trusty-amd64"))
 	s.testFindToolsExact(c, mockToolsStorage, true, false)
 }
 
