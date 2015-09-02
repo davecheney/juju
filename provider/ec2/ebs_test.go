@@ -76,11 +76,11 @@ func (s *ebsVolumeSuite) TearDownSuite(c *gc.C) {
 }
 
 func (s *ebsVolumeSuite) SetUpTest(c *gc.C) {
-	s.PatchValue(&version.Current, version.Binary{
-		Number: testing.FakeVersionNumber,
-		Series: testing.FakeDefaultSeries,
-		Arch:   arch.AMD64,
-	})
+	fake := version.Current
+	fake.Number = testing.FakeVersionNumber
+	fake.Series = testing.FakeDefaultSeries
+	fake.OS = version.Unknown
+	s.PatchValue(&version.Current, fake)
 	s.BaseSuite.SetUpTest(c)
 	s.srv.startServer(c)
 	s.Tests.SetUpTest(c)

@@ -90,7 +90,7 @@ func (t *LiveTests) SetUpTest(c *gc.C) {
 	fake := version.Current
 	fake.Number = coretesting.FakeVersionNumber
 	fake.Series = coretesting.FakeDefaultSeries
-	fake.OS = 0 // this is not a mistake
+	fake.OS = version.Unknown
 	t.BaseSuite.PatchValue(&version.Current, fake)
 	t.BaseSuite.SetUpTest(c)
 	t.LiveTests.SetUpTest(c)

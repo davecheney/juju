@@ -176,11 +176,11 @@ func (s *localJujuTestSuite) testBootstrap(c *gc.C, cfg *config.Config) environs
 	ctx := envtesting.BootstrapContext(c)
 	environ, err := local.Provider.PrepareForBootstrap(ctx, cfg)
 	c.Assert(err, jc.ErrorIsNil)
-	current := version.Binary {
+	current := version.Binary{
 		Number: version.Current.Number,
 		Series: version.Current.Series,
-		Arch: arch.HostArch(),
-		OS: version.Current.OS,
+		Arch:   arch.HostArch(),
+		OS:     version.Current.OS,
 	}
 	availableTools := coretools.List{&coretools.Tools{
 		Version: current,

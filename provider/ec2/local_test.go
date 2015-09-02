@@ -193,11 +193,11 @@ func (t *localServerSuite) TearDownSuite(c *gc.C) {
 }
 
 func (t *localServerSuite) SetUpTest(c *gc.C) {
-	t.PatchValue(&version.Current, version.Binary{
-		Number: coretesting.FakeVersionNumber,
-		Series: coretesting.FakeDefaultSeries,
-		Arch:   arch.AMD64,
-	})
+	fake := version.Current
+	fake.Number = coretesting.FakeVersionNumber
+	fake.Series = coretesting.FakeDefaultSeries
+	fake.OS = version.Unknown
+	t.PatchValue(&version.Current, fake)
 	t.BaseSuite.SetUpTest(c)
 	t.SetFeatureFlags(feature.AddressAllocation)
 	t.srv.startServer(c)

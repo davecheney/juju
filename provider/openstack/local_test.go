@@ -367,11 +367,11 @@ func (s *localServerSuite) TestStartInstanceWithoutPublicIP(c *gc.C) {
 
 func (s *localServerSuite) TestStartInstanceHardwareCharacteristics(c *gc.C) {
 	// Ensure amd64 tools are available, to ensure an amd64 image.
-	amd64Version := version.Binary {
+	amd64Version := version.Binary{
 		Number: version.Current.Number,
 		Series: version.Current.Series,
-		Arch: arch.AMD64,
-		OS: version.Current.OS,
+		Arch:   arch.AMD64,
+		OS:     version.Current.OS,
 	}
 	for _, series := range version.SupportedSeries() {
 		amd64Version.Series = series
